@@ -47,7 +47,7 @@ const TeamOfTheWeek = ({ players = [], onPlayerClick }) => {
               {row.map((player, playerIndex) => (
                 <div
                   key={playerIndex}
-                  className="relative flex flex-col items-center shadow-lg rounded-lg w-36 h-48 cursor-pointer bg-white overflow-hidden"
+                  className="relative flex flex-col items-center shadow-lg rounded-lg w-36 h-52 cursor-pointer bg-white overflow-hidden"
                   onClick={() => onPlayerClick(player)}
                 >
                   <div className="flex flex-col items-center p-4 w-full">
@@ -57,6 +57,9 @@ const TeamOfTheWeek = ({ players = [], onPlayerClick }) => {
                     >
                       {player.name}
                     </h3>
+                    <p className="text-sm font-medium text-gray-600 mb-1">
+                      {player.team}
+                    </p>
                     <p className="text-sm font-medium text-gray-600 mb-2">
                       {player.position}
                     </p>
