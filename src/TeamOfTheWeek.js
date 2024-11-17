@@ -33,8 +33,8 @@ const TeamOfTheWeek = ({ players = [], onPlayerClick }) => {
         <h2 className="text-white text-center text-4xl font-bold pt-6 mb-8">
           Team of the Week
         </h2>
-        <h4 className="text text-center text-1xl font-bold pt-3 mb-4">
-          PREMSCOUT Projected Points
+        <h4 className="text-green-500 text-center text-1xl font-bold pt-3 mb-4">
+          Gameweek 12 PREMSCOUT Projected Points
         </h4>
         <div className="flex flex-col justify-between items-center pt-8 pb-16 space-y-4">
           {lineup.map((row, rowIndex) => (
