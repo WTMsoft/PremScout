@@ -15,7 +15,7 @@ const PlayerCard = ({ player, onClose }) => {
         {/* Player Image */}
         <div className="w-1/3 flex items-center justify-center">
           <img
-            src={player.image || "/placeholder.png"} // Use headshot or placeholder
+            src={player.image || "/placeholder.png"}
             alt={player.name}
             className="w-64 h-64 object-cover rounded-full border-4 border-gray-300"
           />
@@ -77,12 +77,15 @@ const PlayerCard = ({ player, onClose }) => {
             </div>
           </div>
 
-          {/* Value Section */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-500 text-lg">Value</p>
+          {/* Value Section with Tooltip */}
+          <div className="mt-8 text-center relative group">
+            <p className="text-gray-500 text-lg mb-2">Position Value Rating</p>
             <div className="text-yellow-500 text-3xl">
               {"★".repeat(player.value)}
               {"☆".repeat(5 - player.value)}
+            </div>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute -bottom-12 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">
+              Based on predicted points relative to position
             </div>
           </div>
         </div>

@@ -19,12 +19,36 @@ const App = () => {
       Papa.parse(csvText, {
         header: true,
         complete: (result) => {
-          setPlayers(result.data);
+          const processedData = processPlayerValues(result.data);
+          setPlayers(processedData);
         },
       });
     } catch (error) {
       console.error("Error fetching or parsing dataset:", error);
     }
+  };
+
+  // Process player values based on position
+  const processPlayerValues = (playersData) => {
+    // Group players by position and find highest predicted points for each position
+    const highestPointsByPosition = playersData.reduce((acc, player) => {
+      const points = parseFloat(player.predicted_points) || 0;
+      if (!acc[player.position] || points > acc[player.position]) {
+        acc[player.position] = points;
+      }
+      return acc;
+    }, {});
+
+    // Calculate value for each player
+    return playersData.map(player => {
+      const highestPoints = highestPointsByPosition[player.position] || 1;
+      const playerPoints = parseFloat(player.predicted_points) || 0;
+      const value = Math.min(5, Math.round((playerPoints / highestPoints) * 5));
+      return {
+        ...player,
+        value
+      };
+    });
   };
 
   const fetchHeadshots = async () => {
@@ -36,26 +60,24 @@ const App = () => {
       const rows = text.split("\n").map((row) => row.split(","));
       const [header, ...data] = rows;
 
-      // Map headshot URLs to player names
       const mappedHeadshots = data.reduce((acc, [name, url], index) => {
         if (!name || !url) {
           console.warn(`Invalid row at index ${index}:`, { name, url });
-          return acc; // Skip invalid rows
+          return acc;
         }
 
-        const normalizedName = name.trim().toLowerCase(); // Normalize the name
-        acc[normalizedName] = url.trim(); // Map the URL
+        const normalizedName = name.trim().toLowerCase();
+        acc[normalizedName] = url.trim();
         return acc;
       }, {});
 
-      console.log("Mapped Headshots:", mappedHeadshots); // Debugging
+      console.log("Mapped Headshots:", mappedHeadshots);
       setHeadshots(mappedHeadshots);
     } catch (error) {
       console.error("Error fetching headshots:", error);
     }
   };
 
-  // Use useEffect for data fetching
   useEffect(() => {
     fetchData();
     fetchHeadshots();
@@ -64,10 +86,9 @@ const App = () => {
   const enrichedPlayers = players.map((player) => {
     const normalizedPlayerName = player.name.trim().toLowerCase();
     const imageUrl = headshots[normalizedPlayerName];
-    console.log("Mapping Player:", player.name, "Image URL:", imageUrl); // Debugging
     return {
       ...player,
-      image: imageUrl || "/placeholder.png", // Use placeholder if no match found
+      image: imageUrl || "/placeholder.png",
     };
   });
 
@@ -75,20 +96,17 @@ const App = () => {
     <div className="containe bg-cover bg-center w-full min-h-screen bg-black">
       <h1 className="text-white text-3xl font-bold mb-6 p-12">PREMSCOUT</h1>
 
-      {/* Render Team of the Week */}
       <TeamOfTheWeek
         className="container mx-auto bg-black"
-        players={enrichedPlayers} // Use enrichedPlayers to include headshots
+        players={enrichedPlayers}
         onPlayerClick={setSelectedPlayer}
       />
 
-      {/* Render Player Table */}
       <PlayerTable
         players={enrichedPlayers}
         onPlayerClick={setSelectedPlayer}
       />
 
-      {/* Render Player Card if a player is selected */}
       {selectedPlayer && (
         <PlayerCard
           player={selectedPlayer}
