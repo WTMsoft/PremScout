@@ -30,11 +30,15 @@ const App = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">PREMSCOUT</h1>
+    <div className="containe bg-cover bg-center w-full min-h-screen bg-black">
+      <h1 className="text-white text-3xl font-bold mb-6 p-12">PREMSCOUT</h1>
 
       {/* Render Team of the Week */}
-      <TeamOfTheWeek players={players} onPlayerClick={setSelectedPlayer} />
+      <TeamOfTheWeek
+        className="container mx-auto bg-black"
+        players={players}
+        onPlayerClick={setSelectedPlayer}
+      />
 
       {/* Render Player Table */}
       <PlayerTable players={players} onPlayerClick={setSelectedPlayer} />
