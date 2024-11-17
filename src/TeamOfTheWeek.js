@@ -1,7 +1,4 @@
-import React from "react";
-
-const TeamOfTheWeek = ({ players }) => {
-  // Formation: 1 Goalkeeper, 4 Defenders, 3 Midfielders, 3 Forwards
+const TeamOfTheWeek = ({ players, onPlayerClick }) => {
   const formation = [
     { position: "GKP", count: 1 },
     { position: "DEF", count: 4 },
@@ -12,7 +9,7 @@ const TeamOfTheWeek = ({ players }) => {
   const getTopPlayers = (position, count) =>
     players
       .filter((player) => player.position === position)
-      .sort((a, b) => b.total_points - a.total_points)
+      .sort((a, b) => b.predicted_points - a.total_predicted_points)
       .slice(0, count);
 
   const lineup = formation.map(({ position, count }) =>
@@ -20,8 +17,8 @@ const TeamOfTheWeek = ({ players }) => {
   );
 
   return (
-    <div className="bg-green-700 text-white p-6 rounded-lg shadow-md">
-      <h2 className="text-lg font-semibold mb-6">Team of the Week</h2>
+    <div className="grid gap-6 text-center bg-gray-100 p-4 rounded-md">
+      <h2 className="text-lg font-semibold mb-4">Team of the Week</h2>
       <div className="grid grid-rows-4 gap-4">
         {lineup.map((row, rowIndex) => (
           <div
@@ -37,11 +34,14 @@ const TeamOfTheWeek = ({ players }) => {
             {row.map((player, playerIndex) => (
               <div
                 key={playerIndex}
-                className="bg-green-900 p-4 rounded shadow-md w-24 text-center"
+                className="p-4 bg-green-200 rounded shadow-md w-24 text-center cursor-pointer"
+                onClick={() => onPlayerClick(player)}
               >
                 <h3 className="text-sm font-bold">{player.name}</h3>
                 <p className="text-xs">{player.position}</p>
-                <p className="text-xs mt-1">Pts: {player.total_points}</p>
+                <p className="text-xs mt-1">
+                  Pts: {Math.round(player.predicted_points * 10) / 10}
+                </p>
               </div>
             ))}
           </div>

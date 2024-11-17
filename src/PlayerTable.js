@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 
-const PlayerTable = ({ players }) => {
+const PlayerTable = ({ players, onPlayerClick }) => {
   const [filter, setFilter] = useState("");
   const [positionFilter, setPositionFilter] = useState("");
   const [teamFilter, setTeamFilter] = useState("");
   const [priceRange, setPriceRange] = useState([0, 200]); // Adjusted maximum price range
   const [sortField, setSortField] = useState(null);
-  const [ascending, setAscending] = useState(true);
+  const [decending, setDecending] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); // Track current page
+
+  const playersPerPage = 20;
+  console.log(players);
 
   // Filter logic
   const filteredPlayers = players.filter((player) => {
@@ -21,29 +25,67 @@ const PlayerTable = ({ players }) => {
     return matchesName && matchesPosition && matchesTeam && matchesPrice;
   });
 
+  console.log(
+    "Predicted Points Data:",
+    players.map((p) => p.predicted_points)
+  );
+
   // Sorting logic
   const sortedPlayers = [...filteredPlayers].sort((a, b) => {
-    if (!sortField) return 0; // If no sort field is selected, return unsorted
+    if (!sortField) return 0; // If no sort field is selected, do not sort
 
-    const aValue = isNaN(a[sortField])
-      ? a[sortField]
-      : parseFloat(a[sortField]);
-    const bValue = isNaN(b[sortField])
-      ? b[sortField]
-      : parseFloat(b[sortField]);
+    let aValue = a[sortField];
+    let bValue = b[sortField];
 
-    if (ascending) {
+    // Handle undefined values
+    if (aValue === undefined) aValue = "";
+    if (bValue === undefined) bValue = "";
+
+    // Convert numeric fields to numbers
+    if (typeof aValue === "string" && !isNaN(aValue)) {
+      aValue = parseFloat(aValue);
+    }
+    if (typeof bValue === "string" && !isNaN(bValue)) {
+      bValue = parseFloat(bValue);
+    }
+
+    // Ensure numeric fields like predicted_points and expected_goals are numbers
+    if (sortField === "predicted_points" || sortField === "expected_goals") {
+      aValue = Math.round(aValue * 10) / 10; // Default to 0 if invalid or undefined
+      bValue = Math.round(bValue * 10) / 10; // Default to 0 if invalid or undefined
+    }
+
+    // Handle case-insensitive string comparison for string fields
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    // Sort based on ascending or descending order
+    if (decending) {
+      return aValue < bValue ? 1 : -1;
+    } else {
       return aValue > bValue ? 1 : -1;
     }
-    return aValue < bValue ? 1 : -1;
   });
 
+  // Paginated results
+  const totalPages = Math.ceil(sortedPlayers.length / playersPerPage);
+  const startIndex = (currentPage - 1) * playersPerPage;
+  const paginatedPlayers = sortedPlayers.slice(
+    startIndex,
+    startIndex + playersPerPage
+  );
+
   const toggleSort = (field) => {
-    setSortField(field);
-    setAscending(sortField === field ? !ascending : true);
+    if (sortField === field) {
+      setDecending(!decending); // Toggle order if the same field is clicked
+    } else {
+      setSortField(field); // Set new sort field
+      setDecending(true); // Default to descending for new field
+    }
   };
 
-  // Extract unique teams for the dropdown filter
   const teams = [...new Set(players.map((player) => player.team))].sort();
 
   return (
@@ -107,7 +149,8 @@ const PlayerTable = ({ players }) => {
         <button
           onClick={() => {
             setSortField(null);
-            setAscending(true);
+            setDecending(true);
+            setCurrentPage(1); // Reset to the first page
           }}
           className="p-3 bg-blue-500 text-white rounded-md shadow-sm hover:bg-blue-600"
         >
@@ -122,12 +165,17 @@ const PlayerTable = ({ players }) => {
             <tr>
               {[
                 { field: "name", label: "Name" },
-                { field: null, label: "Team" }, // No sorting for the Team column
+                { field: "team", label: "Team" },
                 { field: "position", label: "Position" },
-                { field: "total_points", label: "Points" },
+                { field: "total_points", label: "Total Points" },
                 { field: "now_cost", label: "Price" },
                 { field: "goals_scored", label: "Goals" },
                 { field: "assists", label: "Assists" },
+                { field: "clean_sheets", label: "Clean Sheets" },
+                { field: "saves_per_90", label: "Saves Per 90" },
+                { field: "form", label: "Form" },
+                { field: "predicted_points", label: "Projected Points" },
+                { field: "expected_goals", label: "Expected Goals" },
               ].map(({ field, label }) => (
                 <th
                   key={label}
@@ -140,7 +188,7 @@ const PlayerTable = ({ players }) => {
                     {label}
                     {field && sortField === field && (
                       <span className="ml-2 text-sm">
-                        {ascending ? "🔼" : "🔽"}
+                        {decending ? "🔽" : "🔼"}
                       </span>
                     )}
                   </span>
@@ -149,24 +197,75 @@ const PlayerTable = ({ players }) => {
             </tr>
           </thead>
           <tbody>
-            {sortedPlayers.map((player, index) => (
+            {paginatedPlayers.map((player, index) => (
               <tr
                 key={index}
                 className={`border ${
                   index % 2 === 0 ? "bg-white" : "bg-gray-50"
                 }`}
               >
-                <td className="p-3">{player.name}</td>
+                <td
+                  className="p-3 text-blue-500 cursor-pointer underline"
+                  onClick={() => onPlayerClick(player)}
+                >
+                  {player.name}
+                </td>
                 <td className="p-3">{player.team}</td>
                 <td className="p-3">{player.position}</td>
                 <td className="p-3">{player.total_points}</td>
                 <td className="p-3">${(player.now_cost / 10).toFixed(1)}M</td>
                 <td className="p-3">{player.goals_scored}</td>
                 <td className="p-3">{player.assists}</td>
+                <td className="p-3">{player.clean_sheets}</td>
+                <td className="p-3">{player.saves_per_90}</td>
+                <td className="p-3">{player.form}</td>
+                <td className="p-3">
+                  {player.predicted_points !== undefined &&
+                  player.predicted_points !== null
+                    ? Math.round(player.predicted_points * 10) / 10
+                    : "0.0"}
+                </td>
+
+                <td className="p-3">
+                  {player.expected_goals !== undefined
+                    ? parseFloat(player.expected_goals).toFixed(1)
+                    : "0.0"}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`p-2 rounded ${
+            currentPage === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+        >
+          Previous
+        </button>
+        <p>
+          Page {currentPage} of {totalPages}
+        </p>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className={`p-2 rounded ${
+            currentPage === totalPages
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

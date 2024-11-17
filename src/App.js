@@ -2,15 +2,17 @@ import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import TeamOfTheWeek from "./TeamOfTheWeek";
 import PlayerTable from "./PlayerTable";
+import PlayerCard from "./PlayerCard";
 
 const App = () => {
   const [players, setPlayers] = useState([]);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          "https://black-selected-toucan-858.mypinata.cloud/ipfs/QmdGnDedJiUxYtsSiZ2j79DTrkBcaU1prfqdjgogNgCNBt"
+          "https://gateway.pinata.cloud/ipfs/QmVYY6116EnyM6BpwQ5vywxTRXuShgquZ3HCgAPf5Zm3uc"
         );
         const csvText = await response.text();
         Papa.parse(csvText, {
@@ -29,16 +31,20 @@ const App = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Premier League Fantasy Visualizer
-      </h1>
-      {players.length === 0 ? (
-        <p className="text-center">Loading data...</p>
-      ) : (
-        <>
-          <TeamOfTheWeek players={players} />
-          <PlayerTable players={players} />
-        </>
+      <h1 className="text-3xl font-bold mb-6">PREMSCOUT</h1>
+
+      {/* Render Team of the Week */}
+      <TeamOfTheWeek players={players} onPlayerClick={setSelectedPlayer} />
+
+      {/* Render Player Table */}
+      <PlayerTable players={players} onPlayerClick={setSelectedPlayer} />
+
+      {/* Render Player Card if a player is selected */}
+      {selectedPlayer && (
+        <PlayerCard
+          player={selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+        />
       )}
     </div>
   );
