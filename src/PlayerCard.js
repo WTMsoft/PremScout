@@ -15,7 +15,7 @@ const PlayerCard = ({ player, onClose }) => {
         {/* Player Image */}
         <div className="w-1/3 flex items-center justify-center">
           <img
-            src={player.image} // Assuming `player.image` contains the scraped URL
+            src={player.image || "/placeholder.png"} // Use headshot or placeholder
             alt={player.name}
             className="w-64 h-64 object-cover rounded-full border-4 border-gray-300"
           />
